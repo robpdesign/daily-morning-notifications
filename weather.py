@@ -20,10 +20,20 @@ def get_weather_data():
     current_response = requests.get(current_url)
     current_data = current_response.json()
     
+    # Check for API errors
+    if current_data.get('cod') != 200:
+        error_msg = current_data.get('message', 'Unknown error')
+        raise Exception(f"Weather API error: {error_msg}")
+    
     # 5-day forecast (3-hour intervals)
     forecast_url = f"https://api.openweathermap.org/data/2.5/forecast?lat={SYDNEY_LAT}&lon={SYDNEY_LON}&appid={OPENWEATHER_API_KEY}&units=metric"
     forecast_response = requests.get(forecast_url)
     forecast_data = forecast_response.json()
+    
+    # Check for API errors
+    if str(forecast_data.get('cod')) != '200':
+        error_msg = forecast_data.get('message', 'Unknown error')
+        raise Exception(f"Forecast API error: {error_msg}")
     
     return current_data, forecast_data
 
@@ -127,8 +137,12 @@ def main():
         # Allow manual triggers anytime, but scheduled runs only between 7-8am
         is_manual = os.environ.get('MANUAL_TRIGGER', 'false').lower() == 'true'
         
-        if not is_manual and (current_hour < 7 or current_hour >= 8):
-            print(f"⏭️ Skipping - Sydney time is {sydney_now.strftime('%I:%M %p')}, not 7:30am window")
+        sydney_minute = sydney_now.minute
+        # Allow 7:00am - 8:30am window to catch either cron trigger
+        in_window = (current_hour == 7) or (current_hour == 8 and sydney_minute <= 30)
+        
+        if not is_manual and not in_window:
+            print(f"⏭️ Skipping - Sydney time is {sydney_now.strftime('%I:%M %p')}, outside 7:00-8:30am window")
             return
         
         print(f"🕐 Sydney time: {sydney_now.strftime('%I:%M %p %Z')}")

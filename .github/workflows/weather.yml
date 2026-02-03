@@ -27,11 +27,49 @@ jobs:
         run: |
           pip install requests pytz
       
+      - name: Restore last sent date
+        id: cache-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: last_sent.txt
+          key: weather-sent-date
+      
+      - name: Read last sent date
+        id: last-sent
+        run: |
+          if [ -f last_sent.txt ]; then
+            echo "date=$(cat last_sent.txt)" >> $GITHUB_OUTPUT
+          else
+            echo "date=" >> $GITHUB_OUTPUT
+          fi
+      
       - name: Send weather update
+        id: send-weather
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
           MANUAL_TRIGGER: ${{ github.event_name == 'workflow_dispatch' }}
+          LAST_SENT_DATE: ${{ steps.last-sent.outputs.date }}
         run: |
           python weather.py
+      
+      - name: Save sent date
+        if: steps.send-weather.outputs.sent_date != ''
+        run: |
+          echo "${{ steps.send-weather.outputs.sent_date }}" > last_sent.txt
+      
+      - name: Delete old cache
+        if: steps.send-weather.outputs.sent_date != ''
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh cache delete weather-sent-date || true
+      
+      - name: Save new cache
+        if: steps.send-weather.outputs.sent_date != ''
+        uses: actions/cache/save@v4
+        with:
+          path: last_sent.txt
+          key: weather-sent-date

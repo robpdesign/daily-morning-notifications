@@ -22,8 +22,8 @@ Add these three secrets:
 
 | Secret Name | Value |
 |-------------|-------|
-| `TELEGRAM_BOT_TOKEN` | `7986721703:AAG9t1CkGmVfg2F0g8o6JbLv4cUNSH0VQGc` |
-| `TELEGRAM_CHAT_ID` | `8519004082` |
+| `TELEGRAM_BOT_TOKEN` | `YOUR TOKEN` |
+| `TELEGRAM_CHAT_ID` | `YOUR CHAT ID` |
 | `OPENWEATHER_API_KEY` | Your OpenWeatherMap API key |
 
 ### 4. Test it

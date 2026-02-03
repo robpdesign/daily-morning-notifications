@@ -1,0 +1,37 @@
+name: Daily Sydney Weather
+
+on:
+  schedule:
+    # 7:30am AEDT (daylight saving) = 8:30pm UTC (previous day)
+    - cron: '30 20 * * *'
+    # 7:30am AEST (standard time) = 9:30pm UTC (previous day)
+    - cron: '30 21 * * *'
+  
+  # Allow manual trigger for testing
+  workflow_dispatch:
+
+jobs:
+  send-weather:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install requests pytz
+      
+      - name: Send weather update
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
+          MANUAL_TRIGGER: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+          python weather.py

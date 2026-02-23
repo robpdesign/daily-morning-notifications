@@ -73,3 +73,11 @@ jobs:
         with:
           path: last_sent.txt
           key: weather-sent-date
+      
+      - name: Check birthdays
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          MANUAL_TRIGGER: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+          python birthdays.py

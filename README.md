@@ -1,6 +1,10 @@
-# Telegram Weather Bot 🌤️
+# Daily Telegram Bot 🌤️🎂
 
-Daily Sydney weather updates sent to Telegram at 7:30am AEST via GitHub Actions.
+Daily morning notifications via Telegram, powered by GitHub Actions.
+
+**Features:**
+- **Weather updates** – Sydney forecast with temperature range and rain chances
+- **Birthday reminders** – Notifications on the day of birthdays and anniversaries
 
 ## Setup
 
@@ -21,9 +25,9 @@ Go to your repo → **Settings** → **Secrets and variables** → **Actions** �
 Add these three secrets:
 
 | Secret Name | Value |
-|-------------|-------|
-| `TELEGRAM_BOT_TOKEN` | `YOUR TOKEN` |
-| `TELEGRAM_CHAT_ID` | `YOUR CHAT ID` |
+| --- | --- |
+| `TELEGRAM_BOT_TOKEN` | Your Telegram bot token |
+| `TELEGRAM_CHAT_ID` | Your Telegram chat ID |
 | `OPENWEATHER_API_KEY` | Your OpenWeatherMap API key |
 
 ### 4. Test it
@@ -35,10 +39,9 @@ Go to **Actions** → **Daily Sydney Weather** → **Run workflow** to test manu
 - Runs daily at **7:30am Sydney time** (automatically handles daylight saving)
 - The workflow triggers at both possible UTC times, but the script checks Sydney time before sending
 
-To adjust timing, edit the cron schedules in `.github/workflows/weather.yml`.
+## Message Formats
 
-## Message Format
-
+### Weather
 ```
 ☀️ Sydney Weather — Monday, 03 February
 
@@ -54,3 +57,40 @@ Humidity: 65%
 
 Have a good day! 🚴
 ```
+
+### Birthday/Anniversary
+```
+🎂 Reminder — Thursday, 09 April
+
+🎈 Aelia Bday today!
+```
+
+```
+🎂 Reminder — Thursday, 08 May
+
+💐 Mother's Day today!
+💍 Wedding Anniversary — 15 years!
+```
+
+## Managing Birthdays
+
+Edit `birthdays.json` to add, remove, or update entries:
+
+```json
+{"name": "Dad Bday", "date": "9th Sept", "type": "birthday"},
+{"name": "Wedding Anniversary", "date": "8th May", "type": "anniversary", "year": 2010},
+{"name": "Mother's Day", "date": "8th May", "type": "mothers_day"}
+```
+
+**Types:** `birthday`, `anniversary`, `mothers_day`
+
+For anniversaries, include `year` to show how many years (e.g., "15 years!").
+
+## Files
+
+| File | Purpose |
+| --- | --- |
+| `weather.py` | Fetches weather and sends Telegram message |
+| `birthdays.py` | Checks for today's birthdays/anniversaries |
+| `birthdays.json` | Birthday and anniversary data |
+| `.github/workflows/weather.yml` | GitHub Actions schedule |

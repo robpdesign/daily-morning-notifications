@@ -1,0 +1,16 @@
+[
+  {"name": "Aelia Bday", "date": "9th April", "type": "birthday"},
+  {"name": "Dad Bday", "date": "9th Sept", "type": "birthday"},
+  {"name": "Mum Bday", "date": "24th Jan", "type": "birthday"},
+  {"name": "Luna Bday", "date": "2nd April", "type": "birthday"},
+  {"name": "Lisa Bday", "date": "1st July", "type": "birthday"},
+  {"name": "Mother's Day", "date": "8th May", "type": "mothers_day"},
+  {"name": "Wedding Anniversary", "date": "8th May", "type": "anniversary", "year": 2010},
+  {"name": "Lucas Bday", "date": "27th October", "type": "birthday"},
+  {"name": "Ava Bday", "date": "6th May", "type": "birthday"},
+  {"name": "Daniel Bday", "date": "18th July", "type": "birthday"},
+  {"name": "Alicia Bday", "date": "19th July", "type": "birthday"},
+  {"name": "Pep Bday", "date": "19th May", "type": "birthday"},
+  {"name": "Vince Bday", "date": "23rd Jan", "type": "birthday"},
+  {"name": "Sam Bday", "date": "13th Nov", "type": "birthday"}
+]

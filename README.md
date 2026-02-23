@@ -60,9 +60,9 @@ Have a good day! 🚴
 
 ### Birthday/Anniversary
 ```
-🎂 Reminder — Thursday, 09 April
+🎂 Reminder — Thursday, 10 April
 
-🎈 Aelia Bday today!
+🎈 'Name' Bday today!
 ```
 
 ```
@@ -77,8 +77,8 @@ Have a good day! 🚴
 Edit `birthdays.json` to add, remove, or update entries:
 
 ```json
-{"name": "Dad Bday", "date": "9th Sept", "type": "birthday"},
-{"name": "Wedding Anniversary", "date": "8th May", "type": "anniversary", "year": 2010},
+{"name": "Dad Bday", "date": "9th Aug", "type": "birthday"},
+{"name": "Wedding Anniversary", "date": "7th July", "type": "anniversary", "year": 2015},
 {"name": "Mother's Day", "date": "8th May", "type": "mothers_day"}
 ```
 

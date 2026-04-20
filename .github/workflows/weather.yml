@@ -27,54 +27,51 @@ jobs:
         run: |
           pip install requests pytz
       
-      - name: Restore last sent date
-        id: cache-restore
-        uses: actions/cache/restore@v4
-        with:
-          path: last_sent.txt
-          key: weather-sent-date
-      
-      - name: Read last sent date
-        id: last-sent
+      - name: Get Sydney date
+        id: sydney-date
         run: |
-          if [ -f last_sent.txt ]; then
-            echo "date=$(cat last_sent.txt)" >> $GITHUB_OUTPUT
-          else
-            echo "date=" >> $GITHUB_OUTPUT
-          fi
+          SYDNEY_DATE=$(TZ='Australia/Sydney' date '+%Y-%m-%d')
+          echo "date=$SYDNEY_DATE" >> $GITHUB_OUTPUT
+          echo "Sydney date: $SYDNEY_DATE"
+      
+      - name: Check if already sent today
+        id: cache-check
+        uses: actions/cache@v4
+        with:
+          path: sent_marker.txt
+          key: weather-sent-${{ steps.sydney-date.outputs.date }}
+          lookup-only: true
       
       - name: Send weather update
+        if: steps.cache-check.outputs.cache-hit != 'true' || github.event_name == 'workflow_dispatch'
         id: send-weather
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
           MANUAL_TRIGGER: ${{ github.event_name == 'workflow_dispatch' }}
-          LAST_SENT_DATE: ${{ steps.last-sent.outputs.date }}
         run: |
           python weather.py
       
-      - name: Save sent date
-        if: steps.send-weather.outputs.sent_date != ''
+      - name: Mark as sent
+        if: steps.cache-check.outputs.cache-hit != 'true' && steps.send-weather.outcome == 'success'
         run: |
-          echo "${{ steps.send-weather.outputs.sent_date }}" > last_sent.txt
+          echo "${{ steps.sydney-date.outputs.date }}" > sent_marker.txt
       
-      - name: Delete old cache
-        if: steps.send-weather.outputs.sent_date != ''
-        continue-on-error: true
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          gh cache delete weather-sent-date || true
-      
-      - name: Save new cache
-        if: steps.send-weather.outputs.sent_date != ''
+      - name: Save sent marker
+        if: steps.cache-check.outputs.cache-hit != 'true' && steps.send-weather.outcome == 'success'
         uses: actions/cache/save@v4
         with:
-          path: last_sent.txt
-          key: weather-sent-date
+          path: sent_marker.txt
+          key: weather-sent-${{ steps.sydney-date.outputs.date }}
+      
+      - name: Skip notification
+        if: steps.cache-check.outputs.cache-hit == 'true' && github.event_name != 'workflow_dispatch'
+        run: |
+          echo "⏭️ Skipping - Already sent weather for ${{ steps.sydney-date.outputs.date }}"
       
       - name: Check birthdays
+        if: steps.cache-check.outputs.cache-hit != 'true' || github.event_name == 'workflow_dispatch'
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}

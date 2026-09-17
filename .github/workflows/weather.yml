@@ -7,7 +7,6 @@ on:
     # 7:30am AEST (standard time) = 9:30pm UTC (previous day)
     - cron: '30 21 * * *'
   
-  # Allow manual trigger for testing
   workflow_dispatch:
 
 jobs:
@@ -24,57 +23,19 @@ jobs:
           python-version: '3.11'
       
       - name: Install dependencies
-        run: |
-          pip install requests pytz
-      
-      - name: Get Sydney date
-        id: sydney-date
-        run: |
-          SYDNEY_DATE=$(TZ='Australia/Sydney' date '+%Y-%m-%d')
-          echo "date=$SYDNEY_DATE" >> $GITHUB_OUTPUT
-          echo "Sydney date: $SYDNEY_DATE"
-      
-      - name: Check if already sent today
-        id: cache-check
-        uses: actions/cache@v4
-        with:
-          path: sent_marker.txt
-          key: weather-sent-${{ steps.sydney-date.outputs.date }}
-          lookup-only: true
+        run: pip install requests pytz
       
       - name: Send weather update
-        if: steps.cache-check.outputs.cache-hit != 'true' || github.event_name == 'workflow_dispatch'
-        id: send-weather
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           OPENWEATHER_API_KEY: ${{ secrets.OPENWEATHER_API_KEY }}
           MANUAL_TRIGGER: ${{ github.event_name == 'workflow_dispatch' }}
-        run: |
-          python weather.py
-      
-      - name: Mark as sent
-        if: steps.cache-check.outputs.cache-hit != 'true' && steps.send-weather.outcome == 'success'
-        run: |
-          echo "${{ steps.sydney-date.outputs.date }}" > sent_marker.txt
-      
-      - name: Save sent marker
-        if: steps.cache-check.outputs.cache-hit != 'true' && steps.send-weather.outcome == 'success'
-        uses: actions/cache/save@v4
-        with:
-          path: sent_marker.txt
-          key: weather-sent-${{ steps.sydney-date.outputs.date }}
-      
-      - name: Skip notification
-        if: steps.cache-check.outputs.cache-hit == 'true' && github.event_name != 'workflow_dispatch'
-        run: |
-          echo "⏭️ Skipping - Already sent weather for ${{ steps.sydney-date.outputs.date }}"
+        run: python weather.py
       
       - name: Check birthdays
-        if: steps.cache-check.outputs.cache-hit != 'true' || github.event_name == 'workflow_dispatch'
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           MANUAL_TRIGGER: ${{ github.event_name == 'workflow_dispatch' }}
-        run: |
-          python birthdays.py
+        run: python birthdays.py

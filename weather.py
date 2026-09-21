@@ -137,25 +137,9 @@ def main():
     try:
         sydney_tz = pytz.timezone('Australia/Sydney')
         sydney_now = datetime.now(sydney_tz)
-        current_hour = sydney_now.hour
-        sydney_minute = sydney_now.minute
         sydney_date = sydney_now.strftime('%Y-%m-%d')
         
-        # Allow manual triggers anytime, but scheduled runs only in morning window
         is_manual = os.environ.get('MANUAL_TRIGGER', 'false').lower() == 'true'
-        
-        # Allow 7:00am - 8:30am window to catch either cron trigger
-        in_window = (current_hour == 7) or (current_hour == 8 and sydney_minute <= 30)
-        
-        if not is_manual and not in_window:
-            print(f"⏭️ Skipping - Sydney time is {sydney_now.strftime('%I:%M %p')}, outside 7:00-8:30am window")
-            return
-        
-        # Check if already sent today (via cache from earlier run)
-        last_sent_date = os.environ.get('LAST_SENT_DATE', '')
-        if not is_manual and last_sent_date == sydney_date:
-            print(f"⏭️ Skipping - Already sent weather for {sydney_date}")
-            return
         
         print(f"🕐 Sydney time: {sydney_now.strftime('%I:%M %p %Z')}")
         
@@ -173,14 +157,12 @@ def main():
         
         if result.get('ok'):
             print("✅ Weather update sent successfully!")
-            # Output date for caching
             write_github_output('sent_date', sydney_date)
         else:
             print(f"❌ Failed to send message: {result}")
             
     except Exception as e:
         print(f"❌ Error: {e}")
-        # Send error notification
         error_msg = f"⚠️ Weather bot error:\n{str(e)}"
         send_telegram_message(error_msg)
 
